@@ -56,7 +56,6 @@ public class NettySocketServerApplication implements CommandLineRunner {
 
         socketIOServer.addEventListener("playerMove", PlayerMovementData.class,
                 (client, data, ackSender) -> {
-            System.out.println("playerMove: " + client.getSessionId());
             String playerId = client.getSessionId().toString();
             Player player = playerMap.get(playerId);
             if(player != null) {
