@@ -1,15 +1,16 @@
 package com.example.nettySocketExample;
 
+import com.corundumstudio.socketio.AckRequest;
+import com.corundumstudio.socketio.SocketIOClient;
 import com.corundumstudio.socketio.SocketIOServer;
-import com.example.nettySocketExample.object.Player;
-import com.example.nettySocketExample.object.PlayerMovementData;
+import com.corundumstudio.socketio.listener.DataListener;
+import com.example.nettySocketExample.object.*;
 import jakarta.annotation.PreDestroy;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 
 @Component
@@ -65,11 +66,20 @@ public class NettySocketServerApplication implements CommandLineRunner {
             }
         });
 
+        socketIOServer.addEventListener("playerHit", PlayerHitData.class, new DataListener<PlayerHitData>() {
+            @Override
+            public void onData(SocketIOClient client, PlayerHitData data, AckRequest ackRequest) {
+                System.out.println("Player hit: " + data.getPlayerId() + " Damage: " + data.getDamage());
+
+                // 피격 정보를 모든 클라이언트에 브로드캐스트
+                client.getNamespace().getBroadcastOperations().sendEvent("playerHit", data);
+            }
+        });
+
         socketIOServer.addDisconnectListener(client -> {
             playerMap.remove(client.getSessionId().toString());
             System.out.println("Client.disconnected: " + client.getSessionId());
         });
-
     }
 
     @PreDestroy
